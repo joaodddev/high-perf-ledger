@@ -1,0 +1,19 @@
+[
+  {
+    "label": "go: test all",
+    "command": "go: test ./... -v",
+    "use_new_terminal": false,
+  },
+
+  {
+    "label": "go: bench",
+    "command": "go test ./bench/... -bench=. -benchmem -run=^$",
+    "use_new_terminal": false,
+  },
+
+  {
+    "label": "go: clean data",
+    "command": "make clean",
+    "use_new_terminal": false,
+  },
+]
