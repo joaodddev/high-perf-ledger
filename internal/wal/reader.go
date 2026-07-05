@@ -57,3 +57,18 @@ func (r *Reader) ReadAll() ([]event.Event, error) {
 func (r *Reader) Close() error {
 	return r.file.Close()
 }
+
+func (r *Reader) ReadAfter(afterID uint64) ([]event.Event, error) {
+	all, err := r.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var out []event.Event
+	for _, e := range all {
+		if e.ID > afterID {
+			out = append(out, e)
+		}
+	}
+	return out, nil
+}

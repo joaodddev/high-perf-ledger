@@ -6,9 +6,6 @@ import (
 	"os"
 )
 
-// Snapshot captures an account's fully-replayed state at a specific
-// point in the event log, identified by LastEventID. Replaying only
-// needs to apply events with ID > LastEventID after loading this.
 type Snapshot struct {
 	AccountID   string `json:"account_id"`
 	Balance     int64  `json:"balance"`
@@ -16,10 +13,6 @@ type Snapshot struct {
 	LastEventID uint64 `json:"last_event_id"`
 }
 
-// Write persists a snapshot to disk, overwriting any existing file
-// at path. Snapshots are small and infrequent, so plain JSON (not the
-// pluggable WAL codec) is intentionally used here for simplicity —
-// this is a distinct on-disk format from the event log itself.
 func Write(path string, s Snapshot) error {
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -31,9 +24,6 @@ func Write(path string, s Snapshot) error {
 		return fmt.Errorf("snapshot: write temp file: %w", err)
 	}
 
-	// Rename is atomic on POSIX filesystems: readers never observe a
-	// partially-written snapshot file, even if the process crashes
-	// mid-write (they'd see the old file or the new one, never a mix).
 	if err := os.Rename(tmpPath, path); err != nil {
 		return fmt.Errorf("snapshot: atomic rename: %w", err)
 	}
@@ -41,9 +31,6 @@ func Write(path string, s Snapshot) error {
 	return nil
 }
 
-// Read loads a snapshot from disk. Returns (Snapshot{}, false, nil)
-// if no snapshot file exists yet — this is a normal, expected state
-// for an account that hasn't been snapshotted.
 func Read(path string) (Snapshot, bool, error) {
 	data, err := os.ReadFile(path)
 	if os.IsNotExist(err) {
