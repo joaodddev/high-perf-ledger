@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/joaodddev/high-perf-ledger/internal/codec"
-	"github.com/joaodddev/high-perf-ledger/internal/ledger"
+	"github.com/joaodddev/high-perf-ledger/internal/event"
 )
 
 func tempWALPath(t *testing.T) string {
@@ -23,11 +23,11 @@ func TestWriter_AppendAssignsSequentialIDs(t *testing.T) {
 	}
 	defer w.Close()
 
-	id1, err := w.Append(ledger.Event{AccountID: "acc-1", Type: ledger.EventAccountOpened})
+	id1, err := w.Append(event.Event{AccountID: "acc-1", Type: event.AccountOpened})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	id2, err := w.Append(ledger.Event{AccountID: "acc-1", Type: ledger.EventDeposited, Amount: 1000})
+	id2, err := w.Append(event.Event{AccountID: "acc-1", Type: event.Deposited, Amount: 1000})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -46,10 +46,10 @@ func TestWriter_Reader_RoundTrip(t *testing.T) {
 		t.Fatalf("unexpected error creating writer: %v", err)
 	}
 
-	events := []ledger.Event{
-		{AccountID: "acc-1", Type: ledger.EventAccountOpened},
-		{AccountID: "acc-1", Type: ledger.EventDeposited, Amount: 5000},
-		{AccountID: "acc-1", Type: ledger.EventWithdrawn, Amount: 2000},
+	events := []event.Event{
+		{AccountID: "acc-1", Type: event.AccountOpened},
+		{AccountID: "acc-1", Type: event.Deposited, Amount: 5000},
+		{AccountID: "acc-1", Type: event.Withdrawn, Amount: 2000},
 	}
 
 	for _, e := range events {
@@ -93,7 +93,7 @@ func TestWriter_FsyncDoesNotError(t *testing.T) {
 	}
 	defer w.Close()
 
-	if _, err := w.Append(ledger.Event{AccountID: "acc-1", Type: ledger.EventAccountOpened}); err != nil {
+	if _, err := w.Append(event.Event{AccountID: "acc-1", Type: event.AccountOpened}); err != nil {
 		t.Fatalf("unexpected error with fsync enabled: %v", err)
 	}
 }

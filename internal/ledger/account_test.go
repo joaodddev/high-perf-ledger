@@ -2,18 +2,15 @@ package ledger
 
 import (
 	"testing"
-	"time"
+
+	"github.com/joaodddev/high-perf-ledger/internal/event"
 )
 
-func mustOpen(accountID string) Event {
-	return Event{ID: 1, AccountID: accountID, Type: EventAccountOpened, Timestamp: time.Now()}
-}
-
 func TestAccount_ReplayDepositsAndWithdrawals(t *testing.T) {
-	events := []Event{
-		{ID: 1, AccountID: "acc-1", Type: EventAccountOpened},
-		{ID: 2, AccountID: "acc-1", Type: EventDeposited, Amount: 10_000},
-		{ID: 3, AccountID: "acc-1", Type: EventWithdrawn, Amount: 3_000},
+	events := []event.Event{
+		{ID: 1, AccountID: "acc-1", Type: event.AccountOpened},
+		{ID: 2, AccountID: "acc-1", Type: event.Deposited, Amount: 10_000},
+		{ID: 3, AccountID: "acc-1", Type: event.Withdrawn, Amount: 3_000},
 	}
 
 	acc, err := Replay("acc-1", events)
@@ -29,9 +26,9 @@ func TestAccount_ReplayDepositsAndWithdrawals(t *testing.T) {
 }
 
 func TestAccount_RejectsDoubleOpen(t *testing.T) {
-	events := []Event{
-		{ID: 1, AccountID: "acc-1", Type: EventAccountOpened},
-		{ID: 2, AccountID: "acc-1", Type: EventAccountOpened},
+	events := []event.Event{
+		{ID: 1, AccountID: "acc-1", Type: event.AccountOpened},
+		{ID: 2, AccountID: "acc-1", Type: event.AccountOpened},
 	}
 
 	_, err := Replay("acc-1", events)
@@ -41,8 +38,8 @@ func TestAccount_RejectsDoubleOpen(t *testing.T) {
 }
 
 func TestAccount_RejectsWithdrawalBeforeOpen(t *testing.T) {
-	events := []Event{
-		{ID: 1, AccountID: "acc-1", Type: EventWithdrawn, Amount: 100},
+	events := []event.Event{
+		{ID: 1, AccountID: "acc-1", Type: event.Withdrawn, Amount: 100},
 	}
 
 	_, err := Replay("acc-1", events)
@@ -52,10 +49,10 @@ func TestAccount_RejectsWithdrawalBeforeOpen(t *testing.T) {
 }
 
 func TestAccount_RejectsOverdraft(t *testing.T) {
-	events := []Event{
-		{ID: 1, AccountID: "acc-1", Type: EventAccountOpened},
-		{ID: 2, AccountID: "acc-1", Type: EventDeposited, Amount: 1_000},
-		{ID: 3, AccountID: "acc-1", Type: EventWithdrawn, Amount: 5_000},
+	events := []event.Event{
+		{ID: 1, AccountID: "acc-1", Type: event.AccountOpened},
+		{ID: 2, AccountID: "acc-1", Type: event.Deposited, Amount: 1_000},
+		{ID: 3, AccountID: "acc-1", Type: event.Withdrawn, Amount: 5_000},
 	}
 
 	_, err := Replay("acc-1", events)
@@ -65,14 +62,14 @@ func TestAccount_RejectsOverdraft(t *testing.T) {
 }
 
 func TestAccount_TransferSentAndReceived(t *testing.T) {
-	sender := []Event{
-		{ID: 1, AccountID: "acc-1", Type: EventAccountOpened},
-		{ID: 2, AccountID: "acc-1", Type: EventDeposited, Amount: 5_000},
-		{ID: 3, AccountID: "acc-1", Type: EventTransferSent, Amount: 2_000, Metadata: map[string]string{"to": "acc-2"}},
+	sender := []event.Event{
+		{ID: 1, AccountID: "acc-1", Type: event.AccountOpened},
+		{ID: 2, AccountID: "acc-1", Type: event.Deposited, Amount: 5_000},
+		{ID: 3, AccountID: "acc-1", Type: event.TransferSent, Amount: 2_000, Metadata: map[string]string{"to": "acc-2"}},
 	}
-	receiver := []Event{
-		{ID: 1, AccountID: "acc-2", Type: EventAccountOpened},
-		{ID: 2, AccountID: "acc-2", Type: EventTransferReceived, Amount: 2_000, Metadata: map[string]string{"from": "acc-1"}},
+	receiver := []event.Event{
+		{ID: 1, AccountID: "acc-2", Type: event.AccountOpened},
+		{ID: 2, AccountID: "acc-2", Type: event.TransferReceived, Amount: 2_000, Metadata: map[string]string{"from": "acc-1"}},
 	}
 
 	senderAcc, err := Replay("acc-1", sender)
@@ -93,7 +90,7 @@ func TestAccount_TransferSentAndReceived(t *testing.T) {
 }
 
 func TestAccount_RejectsUnknownEventType(t *testing.T) {
-	events := []Event{
+	events := []event.Event{
 		{ID: 1, AccountID: "acc-1", Type: "unknown_event"},
 	}
 

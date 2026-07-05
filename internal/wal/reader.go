@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/joaodddev/high-perf-ledger/internal/codec"
-	"github.com/joaodddev/high-perf-ledger/internal/ledger"
+	"github.com/joaodddev/high-perf-ledger/internal/event"
 )
 
 type Reader struct {
@@ -24,8 +24,8 @@ func NewReader(path string, c codec.Codec) (*Reader, error) {
 	return &Reader{file: f, codec: c}, nil
 }
 
-func (r *Reader) ReadAll() ([]ledger.Event, error) {
-	var events []ledger.Event
+func (r *Reader) ReadAll() ([]event.Event, error) {
+	var events []event.Event
 
 	for {
 		lenBuf := make([]byte, 4)
@@ -43,12 +43,12 @@ func (r *Reader) ReadAll() ([]ledger.Event, error) {
 			return nil, fmt.Errorf("wal: read frame payload: %w", err)
 		}
 
-		event, err := r.codec.Decode(payload)
+		e, err := r.codec.Decode(payload)
 		if err != nil {
 			return nil, fmt.Errorf("wal: decode event: %w", err)
 		}
 
-		events = append(events, event)
+		events = append(events, e)
 	}
 
 	return events, nil

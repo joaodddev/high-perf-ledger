@@ -1,10 +1,9 @@
 package codec
 
-import "github.com/joaodddev/high-perf-ledger/internal/ledger"
+import "github.com/joaodddev/high-perf-ledger/internal/event"
 
 type Codec interface {
-	Encode(e ledger.Event) ([]byte, error)
-	Decode(data []byte) (ledger.Event, error)
-
+	Encode(e event.Event) ([]byte, error)
+	Decode(data []byte) (event.Event, error)
 	Name() string
 }

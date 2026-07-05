@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/joaodddev/high-perf-ledger/internal/codec"
-	"github.com/joaodddev/high-perf-ledger/internal/ledger"
+	"github.com/joaodddev/high-perf-ledger/internal/event"
 )
 
 type Writer struct {
@@ -21,7 +21,6 @@ type Writer struct {
 type Config struct {
 	Path  string
 	Codec codec.Codec
-
 	Fsync bool
 }
 
@@ -30,15 +29,10 @@ func NewWriter(cfg Config) (*Writer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("wal: open file: %w", err)
 	}
-
-	return &Writer{
-		file:  f,
-		codec: cfg.Codec,
-		fsync: cfg.Fsync,
-	}, nil
+	return &Writer{file: f, codec: cfg.Codec, fsync: cfg.Fsync}, nil
 }
 
-func (w *Writer) Append(e ledger.Event) (uint64, error) {
+func (w *Writer) Append(e event.Event) (uint64, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

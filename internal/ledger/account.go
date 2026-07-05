@@ -1,12 +1,15 @@
 package ledger
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/joaodddev/high-perf-ledger/internal/event"
+)
 
 type Account struct {
 	ID      string
-	Balance int64 // cents
+	Balance int64
 	Opened  bool
-
 	version uint64
 }
 
@@ -14,21 +17,21 @@ func NewAccount(id string) *Account {
 	return &Account{ID: id}
 }
 
-func (a *Account) Apply(e Event) error {
+func (a *Account) Apply(e event.Event) error {
 	switch e.Type {
-	case EventAccountOpened:
+	case event.AccountOpened:
 		if a.Opened {
 			return fmt.Errorf("ledger: account %s already opened", a.ID)
 		}
 		a.Opened = true
 
-	case EventDeposited:
+	case event.Deposited:
 		if !a.Opened {
 			return fmt.Errorf("ledger: cannot deposit into unopened account %s", a.ID)
 		}
 		a.Balance += e.Amount
 
-	case EventWithdrawn:
+	case event.Withdrawn:
 		if !a.Opened {
 			return fmt.Errorf("ledger: cannot withdraw from unopened account %s", a.ID)
 		}
@@ -37,13 +40,13 @@ func (a *Account) Apply(e Event) error {
 		}
 		a.Balance -= e.Amount
 
-	case EventTransferSent:
+	case event.TransferSent:
 		if a.Balance < e.Amount {
 			return fmt.Errorf("ledger: insufficient funds for transfer from account %s", a.ID)
 		}
 		a.Balance -= e.Amount
 
-	case EventTransferReceived:
+	case event.TransferReceived:
 		a.Balance += e.Amount
 
 	default:
@@ -54,7 +57,7 @@ func (a *Account) Apply(e Event) error {
 	return nil
 }
 
-func Replay(id string, events []Event) (*Account, error) {
+func Replay(id string, events []event.Event) (*Account, error) {
 	acc := NewAccount(id)
 	for _, e := range events {
 		if err := acc.Apply(e); err != nil {
