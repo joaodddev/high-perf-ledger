@@ -4,20 +4,19 @@ import "time"
 
 type EventType string
 
-const {
-	EventAccountOpened EventType = "account_oppened"
-	EventDeposited EventType = "deposited"
-	EventWithdraw EventType = "withdraw"
-	EventTransferSent EventType = "transfer_sent"
+const (
+	EventAccountOpened    EventType = "account_opened"
+	EventDeposited        EventType = "deposited"
+	EventWithdrawn        EventType = "withdrawn"
+	EventTransferSent     EventType = "transfer_sent"
 	EventTransferReceived EventType = "transfer_received"
-}
+)
 
 type Event struct {
-
-	ID uint64
+	ID        uint64
 	AccountID string
-	Type EventType
-	Amount int64
+	Type      EventType
+	Amount    int64
 	Timestamp time.Time
-	Metadata map[string]string
+	Metadata  map[string]string
 }
