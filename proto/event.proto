@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package event;
+
+option go_package = "github.com/joaodddev/high-perf-ledger/internal/codec/pb";
+
+message Event {
+  uint64 id = 1;
+  string account_id = 2;
+  string type = 3;
+  int64 amount = 4;
+  int64 timestamp_unix_nano = 5;
+  map<string, string> metadata = 6;
+}
